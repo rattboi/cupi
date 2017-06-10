@@ -65,6 +65,7 @@ const CMD_WRITE: usize = 0x40;
 const CMD_READ: usize  = 0x41;
 
 bitflags! {
+    //    struct Flags: u8 { //  IOCONRegister
     flags IOCONRegister: u8 {
         const IOCON_UNUSED = 0x01,
 	    const IOCON_INTPOL = 0x02,

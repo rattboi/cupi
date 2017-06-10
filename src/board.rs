@@ -169,10 +169,12 @@ pub fn board() -> Board {
                 Some(hardware) => match hardware.as_str() {
                     "BCM2708" => CPU::BCM2708,
                     "BCM2709" => CPU::BCM2709,
+                    "BCM2835" => CPU::BCM2709,
                     _ => CPU::Unknown
                 },
                 _ => CPU::Unknown
             };
+            
             match cpuinfo.0.get("Revision") {
                 Some(ref rev) => {
                     match u64::from_str_radix(rev, 16) {
