@@ -29,7 +29,7 @@ pub enum CPU {
 // Raspberry Pi
 
 #[derive(Clone, Copy, Debug)]
-pub enum RaspberryModel { A, B, BP, AP, CM, P0, P2, P3, UN }
+pub enum RaspberryModel { A, B, BP, AP, CM, P0, P0W, P2, P3, UN }
 
 impl<'a> From<&'a RaspberryModel> for &'static str {
     fn from(model: &'a RaspberryModel) -> Self {
@@ -40,6 +40,7 @@ impl<'a> From<&'a RaspberryModel> for &'static str {
             RaspberryModel::AP => "Model A+",
             RaspberryModel::CM => "Compute Module",
             RaspberryModel::P0 => "Zero",
+            RaspberryModel::P0W => "Zero W",
             RaspberryModel::P2 => "Model 2",
             RaspberryModel::P3 => "Model 3",
             RaspberryModel::UN => "Unknown"
@@ -165,16 +166,6 @@ impl Board {
 pub fn board() -> Board {
     match cpuinfo() {
         Ok(cpuinfo) => {
-            let cpu = match cpuinfo.0.get("Hardware") {
-                Some(hardware) => match hardware.as_str() {
-                    "BCM2708" => CPU::BCM2708,
-                    "BCM2709" => CPU::BCM2709,
-                    "BCM2835" => CPU::BCM2709,
-                    _ => CPU::Unknown
-                },
-                _ => CPU::Unknown
-            };
-            
             match cpuinfo.0.get("Revision") {
                 Some(ref rev) => {
                     match u64::from_str_radix(rev, 16) {
@@ -190,6 +181,7 @@ pub fn board() -> Board {
                                     6 => RaspberryModel::CM,
                                     8 => RaspberryModel::P3,
                                     9 => RaspberryModel::P0, // Zero
+                                    12 => RaspberryModel::P0W, // Zero W
                                     _ => RaspberryModel::UN
                                 };
                                 let maker = match (revision & (0x0F << 16)) >> 16 {
@@ -203,6 +195,18 @@ pub fn board() -> Board {
                                     1 => RaspberryMemory(512),
                                     2 => RaspberryMemory(1024),
                                     _ => RaspberryMemory(0)
+                                };
+                                let cpu = match (model) {
+                                    RaspberryModel::A => CPU::BCM2708,
+                                    RaspberryModel::B => CPU::BCM2708,
+                                    RaspberryModel::AP => CPU::BCM2708,
+                                    RaspberryModel::BP => CPU::BCM2708,
+                                    RaspberryModel::P2 => CPU::BCM2709,
+                                    RaspberryModel::CM => CPU::BCM2709,
+                                    RaspberryModel::P3 => CPU::BCM2709,
+                                    RaspberryModel::P0 => CPU::BCM2708,
+                                    RaspberryModel::P0W => CPU::BCM2708,
+                                    RaspberryModel::UN => CPU::Unknown
                                 };
                                 Board { hardware: RaspberryPi(model, RaspberryRevision::R(rev as u8), memory, maker), cpu: cpu, overvolted: false }
                             } else {
@@ -226,13 +230,21 @@ pub fn board() -> Board {
                                     "0015" => RaspberryPi(RaspberryModel::AP, RaspberryRevision::V11, RaspberryMemory(256), RaspberryMaker::Sony),
                                     _      => RaspberryPi(RaspberryModel::UN, RaspberryRevision::UN, RaspberryMemory(0), RaspberryMaker::Unknown)
                                 };
+                                let cpu = match cpuinfo.0.get("Hardware") {
+                                    Some(hardware) => match hardware.as_str() {
+                                        "BCM2708" => CPU::BCM2708,
+                                        "BCM2709" => CPU::BCM2709,
+                                        _ => CPU::Unknown
+                                    },
+                                    _ => CPU::Unknown
+                                };
                                 Board { hardware: hardware, cpu: cpu, overvolted: overvolted }
                             }
                         },
-                        Err(_) => Board { hardware: Hardware::Unknown, cpu: cpu, overvolted: false }
+                        Err(_) => Board { hardware: Hardware::Unknown, cpu: CPU::Unknown, overvolted: false }
                     }
                 },
-                None => Board { hardware: Hardware::Unknown, cpu: cpu, overvolted: false }
+                None => Board { hardware: Hardware::Unknown, cpu: CPU::Unknown, overvolted: false }
             }
         },
         Err(_) => {
