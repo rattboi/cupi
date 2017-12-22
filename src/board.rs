@@ -233,6 +233,7 @@ pub fn board() -> Board {
                                 let cpu = match cpuinfo.0.get("Hardware") {
                                     Some(hardware) => match hardware.as_str() {
                                         "BCM2708" => CPU::BCM2708,
+                                        "BCM2835" => CPU::BCM2708,
                                         "BCM2709" => CPU::BCM2709,
                                         _ => CPU::Unknown
                                     },
