@@ -83,7 +83,7 @@ pub struct MCP23S17 {
 }
 
 impl MCP23S17 {
-    pub unsafe fn new(address: usize) -> Result<Self> {
+    pub fn new(address: usize) -> Result<Self> {
         let mut spi = try!(Spidev::open("/dev/spidev0.0"));
         assert!(address <= 8);
         let mut options = SpidevOptions::new();
