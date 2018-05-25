@@ -196,7 +196,7 @@ pub fn board() -> Board {
                                     2 => RaspberryMemory(1024),
                                     _ => RaspberryMemory(0)
                                 };
-                                let cpu = match (model) {
+                                let cpu = match model {
                                     RaspberryModel::A => CPU::BCM2708,
                                     RaspberryModel::B => CPU::BCM2708,
                                     RaspberryModel::AP => CPU::BCM2708,
